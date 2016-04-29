@@ -1,0 +1,48 @@
+#!/usr/bin/env node
+
+let fs = require('q-io/fs');
+let path = require('path');
+let Q = require('q');
+let bower = require('bower');
+let shell = require('shelljs');
+
+let generateElementProperties = require('../browser/generate-property.js');
+let installElements = require('../browser/install-elements.js');
+let getElementIds = require('../browser/get-element-ids.js');
+let vulcanCrisp = require('../browser/vulcan-crisp.js');
+let build = require('../browser/build.js');
+
+let baseDir = __dirname.split(path.sep);
+baseDir.pop();
+baseDir = path.join(...baseDir, 'browser');
+
+Q.spawn(function* () {
+  shell.mkdir('-p', '_site');
+  yield fs.copy(path.resolve(baseDir, 'site/bower.json'), '_site/bower.json');
+
+  shell.pushd('_site');
+  yield new Promise((resolve, reject) => {
+    bower.commands
+      .install()
+      .on('end', resolve)
+      .on('error', reject);
+  });
+  shell.popd();
+
+  yield Promise.all([
+    fs.copy(path.resolve(baseDir, 'site/favicon.ico'), '_site/favicon.ico'),
+    fs.copyTree(path.resolve(baseDir, 'site/components'), '_site/components'),
+    fs.copyTree(path.resolve(baseDir, 'site/assets'), '_site/assets'),
+    fs.copyTree(path.resolve(baseDir, 'site/scripts'), '_site/scripts'),
+    fs.copyTree(path.resolve(baseDir, 'site/styles'), '_site/styles')
+  ]);
+
+  yield installElements();
+  yield build();
+  yield getElementIds();
+  yield generateElementProperties();
+
+  if (process.argv[2] === '--prod') {
+    vulcanCrisp();
+  }
+});
