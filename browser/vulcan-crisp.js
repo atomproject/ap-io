@@ -17,7 +17,7 @@ let vulcan = new Vulcanize({
 
 module.exports = Q.async(function*() {
   let htmlP = new Promise((resolve, reject) => {
-    vulcan.process('components/elements.html', (err, html) => {
+    vulcan.process('_site/components/elements.html', (err, html) => {
       if (err) {
         reject(err);
       }
