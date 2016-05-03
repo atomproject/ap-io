@@ -11,10 +11,8 @@ let installElements = require('../browser/install-elements.js');
 let getElementIds = require('../browser/get-element-ids.js');
 let vulcanCrisp = require('../browser/vulcan-crisp.js');
 let build = require('../browser/build.js');
-
-let baseDir = __dirname.split(path.sep);
-baseDir.pop();
-baseDir = path.join(...baseDir, 'browser');
+let baseDir = path.dirname(__dirname);
+baseDir = path.join(baseDir, 'browser');
 
 Q.spawn(function* () {
   shell.mkdir('-p', '_site');
