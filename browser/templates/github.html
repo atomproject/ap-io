@@ -31,7 +31,8 @@ layout: default
         el-name="{{ page.name }}"
         el-disp-name="{{ page.pageDirName }}"
         el-org-name="{{ page.location.githubUser }}"
-        el-dependencies='{{ page.dependencies }}'>
+        el-dependencies='{{ page.dependencies }}'
+        absolute-baseurl='{{ site.absoluteBaseurl }}'>
         <template>{{ page.innerHTML }}</template>
       </t-demo-atom>
     </div>

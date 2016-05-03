@@ -72,7 +72,7 @@
 
       <h4>Option 1: CDN (Recommended for quick and simple usage)</h4>
       <highlightjs-element
-        text="{{cdnImports(elName, elDispName, elDependencies, showDs)}}">
+        text="{{cdnImports(elName, elDispName, elDependencies, showDs, absoluteBaseurl)}}">
       </highlightjs-element>
 
       <h4>Option 2: Bower (Recommended for production usage)</h4>
@@ -142,6 +142,10 @@
           computed: 'getShowDs(dataSources.*)'
         },
 
+        absoluteBaseurl: {
+          type: String
+        },
+
         dataSources: {
           type: Object,
           value: function() { return {}; }
@@ -175,13 +179,12 @@
         return installs;
       },
 
-      cdnImports: function(elName, elDispName, elDependencies, showDs) {
-        // TODO: this url will different for each project
-        let baseDomain = 'https://atomproject.github.io/elements/';
+      cdnImports: function(elName, elDispName, elDependencies,
+        showDs, absoluteBaseurl) {
 
-        baseDomain += `${elDispName}/bower_components`;
+        absoluteBaseurl += `${elDispName}/bower_components`;
 
-        return this.getDeps(elName, elDependencies, showDs, baseDomain);
+        return this.getDeps(elName, elDependencies, showDs, absoluteBaseurl);
       },
 
       bowerImports: function(elName, elDependencies, showDs) {

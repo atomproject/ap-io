@@ -93,7 +93,8 @@
               el-name="[[elName]]"
               el-disp-name="[[elDispName]]"
               el-html="[[elHtml]]"
-              el-dependencies="[[elDependencies]]">
+              el-dependencies="[[elDependencies]]"
+              absolute-baseurl="[[absoluteBaseurl]]">
             </element-code>
           </div>
         </div>
@@ -133,6 +134,7 @@
         elOrgName: String,
         elDependencies: Array,
         demoFile: String,
+        absoluteBaseurl: String,
 
         landscape: {
           type: Boolean,

@@ -13,7 +13,6 @@ let defaultConfig = {
   pagesDir: path.resolve(__dirname, 'pages'),
   templatesDir: path.resolve(__dirname, 'templates'),
   baseurl: '',
-  showDemoTester: true,
   travisBaseUrl: 'https://travis-ci.org',
   markdownExtensions: ['.md']
 };
@@ -155,15 +154,15 @@ function getElementContext(el, config) {
 }
 
 function getConfig() {
-  if (process.argv[2] === '--prod') {
-    defaultConfig.baseurl = '/elements';
-  }
-
   let filePath = 'metadata.json';
 
   return fs.read(filePath).then(config => {
     config = JSON.parse(config);
     config = Object.assign({}, defaultConfig, config);
+
+    if (process.argv[2] !== '--prod') {
+      config.baseurl = '';
+    }
 
     let elements = config.elements.map(el => getElementContext(el, config));
 
