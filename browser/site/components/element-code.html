@@ -154,29 +154,22 @@
       },
 
       getShowDs: function() {
-        return Object.keys(this.dataSources).reduce(function(showDs, key) {
+        return Object.keys(this.dataSources).reduce((showDs, key) => {
           return showDs || Boolean(this.dataSources[key].showDs);
-        }.bind(this), false);
+        }, false);
       },
 
       bowerInstalls: function(elName, elOrgName, elDependencies, showDs) {
-        var installs = 'bower install --save ';
+        let installs = 'bower install --save ';
 
-        installs += elOrgName + '/' + elName + '#master ';
-
+        installs += `${elOrgName}/${elName}#master `;
         installs += elDependencies
-          .map(function(dep) {
-            return dep.install;
-          })
-          .filter(function(dep, i, deps) {
-            return dep && deps.indexOf(dep) === i;
-          })
-          .reduce(function(total, dep) {
-            return total + dep + ' ';
-          }, '');
+          .map(dep => dep.install)
+          .filter((dep, i, deps) => dep && deps.indexOf(dep) === i)
+          .reduce((total, dep) => `${total}${dep} `, '');
 
         if (showDs) {
-          installs += 'atomproject/dynamic-data-source ';
+          installs += 'atomproject/dynamic-data-source';
         }
 
         return installs;
@@ -184,22 +177,22 @@
 
       cdnImports: function(elName, elDispName, elDependencies, showDs) {
         // TODO: this url will different for each project
-        var baseDomain = 'https://atomproject.github.io/elements/';
+        let baseDomain = 'https://atomproject.github.io/elements/';
 
-        baseDomain += elDispName + '/bower_components';
+        baseDomain += `${elDispName}/bower_components`;
 
         return this.getDeps(elName, elDependencies, showDs, baseDomain);
       },
 
       bowerImports: function(elName, elDependencies, showDs) {
-        var baseDomain = '{{ path to bower_components dir }}';
+        let baseDomain = '{{ path to bower_components dir }}';
 
         return this.getDeps(elName, elDependencies, showDs, baseDomain);
       },
 
       getDeps: function(elName, elDependencies, showDs, baseDomain) {
-        var elSrc = elName + '/' + elName + '.html';
-        var ds = 'dynamic-data-source/dynamic-data-source.html';
+        let elSrc = `${elName}/${elName}.html`;
+        let ds = 'dynamic-data-source/dynamic-data-source.html';
 
         elDependencies = elDependencies.slice();
         elDependencies.push({relPath: elSrc, type: 'link'});
@@ -209,7 +202,7 @@
         }
 
         return elDependencies
-          .map(function(dep) {
+          .map(dep => {
             var url = baseDomain + '/' + dep.relPath;
 
             if (dep.type === 'script') {
@@ -221,7 +214,7 @@
             else {
               return '';
             }
-          }.bind(this))
+          })
           .join('\n');
       },
 
@@ -233,7 +226,7 @@
       },
 
       linkTemplate: function(href) {
-        return '<link rel="import" href="' + href + '">';
+        return `<link rel="import" href="${href}">`;
       },
 
       nameChanged: function() {
@@ -242,21 +235,21 @@
       },
 
       updateCode: function() {
-        var name = this.elName;
-        var attribs = this.elAttribs;
-        var innerHTML = this.elHtml;
-        var code = this.getComponentCode(name, attribs, innerHTML);
+        let name = this.elName;
+        let attribs = this.elAttribs;
+        let innerHTML = this.elHtml;
+        let code = this.getComponentCode(name, attribs, innerHTML);
 
         if (this.dataSources) {
-          Object.keys(this.dataSources).forEach(function(key) {
-            var ds = this.dataSources[key];
+          Object.keys(this.dataSources).forEach(key => {
+            let ds = this.dataSources[key];
 
             if (!ds.showDs) {
               return;
             }
 
             code += this.getComponentCode(ds.name, ds.attribs);
-          }.bind(this));
+          });
         }
 
         return window.html_beautify(code, this.beautifyOpts);
