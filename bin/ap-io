@@ -4,7 +4,6 @@ let fs = require('q-io/fs');
 let path = require('path');
 let Q = require('q');
 let bower = require('bower');
-let shell = require('shelljs');
 
 let generateElementProperties = require('../browser/generate-property.js');
 let installElements = require('../browser/install-elements.js');
@@ -15,17 +14,17 @@ let baseDir = path.dirname(__dirname);
 baseDir = path.join(baseDir, 'browser');
 
 Q.spawn(function* () {
-  shell.mkdir('-p', '_site');
+  yield fs.makeTree('_site');
   yield fs.copy(path.resolve(baseDir, 'site/bower.json'), '_site/bower.json');
 
-  shell.pushd('_site');
+  process.chdir('_site');
   yield new Promise((resolve, reject) => {
     bower.commands
       .install()
       .on('end', resolve)
       .on('error', reject);
   });
-  shell.popd();
+  process.chdir('../');
 
   yield Promise.all([
     fs.copy(path.resolve(baseDir, 'site/favicon.ico'), '_site/favicon.ico'),

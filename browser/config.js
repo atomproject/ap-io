@@ -47,6 +47,10 @@ let extractInnerHtml = Q.async(function* (name, fpath) {
     });
 });
 
+// TODO: use packages used by bower for loading and parsing bower.json
+// following are the relevent packages that should be used
+// https://www.npmjs.com/package/bower-json
+// https://www.npmjs.com/package/bower-endpoint-parser
 let extractDeps = Q.async(function* (baseDir, elName) {
   let bowerPath = `${baseDir}/bower.json`;
   let demoFilePath = `${baseDir}/demo/index.html`;

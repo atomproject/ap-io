@@ -1,12 +1,24 @@
 'use strict';
 
+let fs = require('q-io/fs');
 let getConfig = require('./config').getConfig;
-let shell = require('shelljs');
 let Q = require('q');
 let request = require('request');
 let tar = require('tar-fs');
 let gunzip = require('gunzip-maybe');
 let bower = require('bower');
+
+let { pushd, popd } = (function() {
+  let stack = [];
+
+  return {
+    pushd: dir => {
+      process.env.OLDPWD = stack.push(process.cwd());
+      process.chdir(dir);
+    },
+    popd: () => process.chdir(process.env.OLDPWD = stack.pop())
+  };
+})();
 
 module.exports = Q.async(function* () {
   let config = yield getConfig();
@@ -25,8 +37,9 @@ module.exports = Q.async(function* () {
     });
 
   for (let el of elements) {
-    shell.mkdir('-p', el.dir);
+    yield fs.makeTree(el.dir);
 
+    console.log(`Extract: ${el.archiveUrl}`);
     yield new Promise((resolve, reject) => {
       let extractStream = tar.extract(el.dir);
 
@@ -37,9 +50,11 @@ module.exports = Q.async(function* () {
         .pipe(extractStream);
     });
 
-    shell.cp(`${el.dir}/${el.name}-master/bower.json`, el.dir);
+    pushd(el.dir);
 
-    shell.pushd(el.dir);
+    yield fs.copy(`${el.name}-master/bower.json`, 'bower.json');
+
+    console.log(`Install: ${el.dir}`);
     yield new Promise((resolve, reject) => {
       bower.commands
         .install()
@@ -52,7 +67,10 @@ module.exports = Q.async(function* () {
         .on('end', resolve)
         .on('error', reject);
     });
-    shell.cp('-r', `${el.name}-master`, `bower_components/${el.name}`);
-    shell.popd();
+
+    console.log(`Copy: ${el.name}-master`);
+    yield fs.copyTree(`${el.name}-master`, `bower_components/${el.name}`);
+
+    popd();
   }
 });

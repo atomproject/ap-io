@@ -55,9 +55,9 @@ let createElementPage = Q.async(function* (elContext, config) {
 });
 
 let createPage = Q.async(function* (filePath, config) {
-  let exists = yield fs.exists(filePath);
+  let stat = yield fs.stat(filePath);
 
-  if (!exists) {
+  if (!stat.isFile()) {
     return;
   }
 
@@ -98,11 +98,13 @@ module.exports = Q.async(function* () {
   yield fs.makeTree('_site');
 
   //create element pages
-  config.elements.forEach(elContext => {
-    createElementPage(elContext, config);
+  let elPages = config.elements.map(elContext => {
+    return createElementPage(elContext, config);
   });
 
   //create other pages
   let files = yield glob(`${config.pagesDir}/**`);
-  files.forEach(filePath => createPage(filePath, config));
+  let pages = files.map(filePath => createPage(filePath, config));
+
+  return Promise.all([...elPages, ...pages]);
 });
