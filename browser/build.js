@@ -5,8 +5,6 @@ let path = require('path');
 let fm = require('front-matter');
 let Liquid = require('liquid-node');
 let marked = require('marked');
-let promisify = require('promisify-node');
-let glob = promisify(require('glob'));
 let engine = new Liquid.Engine();
 let Q = require('q');
 
@@ -52,13 +50,10 @@ let createElementPage = Q.async(function* (elContext, config) {
   let templatePath = `${config._templatesDir}/github.html`;
   // resolve the layout of the template
   let queue = yield resolveLayout(templatePath, config);
-  let fullContext = {
-    site: config,
-    page: elContext
-  };
+  let context = {site: config, page: elContext};
 
   // get the contents of the element page
-  let page = yield renderLayout(queue, fullContext);
+  let page = yield renderLayout(queue, context);
   let pagePath = elContext.pageDirName;
 
   // we want clean urls so we create index.html files in element dirs
@@ -106,7 +101,18 @@ let createPage = Q.async(function* (filePath, config) {
 });
 
 // the config used here should contain everything, i.e. `fullConfig`
-module.exports = Q.async(function* (config) {
+module.exports = Q.async(function* (config, pages) {
+  config.pages = pages
+    .map(p => {
+      let name = path.basename(p).replace(/\..*/, '');
+
+      return name.toLowerCase() === 'index' ? false : {
+        url: `${config.baseurl}/${name}/`,
+        name: name[0].toUpperCase() + name.slice(1)
+      };
+    })
+    .filter(p => Boolean(p));
+
   //setup yaml parser engine
   engine.fileSystem = new Liquid.LocalFileSystem();
   engine.fileSystem.root = config._includesDir;
@@ -115,13 +121,12 @@ module.exports = Q.async(function* (config) {
   yield fs.makeTree('_site');
 
   //create element pages
-  let elPages = config.elements.map(elContext => {
+  let elPagesP = config.elements.map(elContext => {
     return createElementPage(elContext, config);
   });
 
   //create other pages
-  let files = yield glob(`${config.pagesDir}/*`);
-  let pages = files.map(filePath => createPage(filePath, config));
+  let pagesP = pages.map(pagePath => createPage(pagePath, config));
 
-  return Promise.all([...elPages, ...pages]);
+  return Promise.all([...elPagesP, ...pagesP]);
 });

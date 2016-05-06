@@ -10,7 +10,7 @@ let Q = require('q');
 let defaultConfig = {
   _includesDir: path.resolve(__dirname, 'includes'),
   _layoutsDir: path.resolve(__dirname, 'layouts'),
-  pagesDir: path.resolve(__dirname, 'pages'),
+  _pagesDir: path.resolve(__dirname, 'pages'),
   _templatesDir: path.resolve(__dirname, 'templates'),
   baseurl: '',
   travisBaseUrl: 'https://travis-ci.org',

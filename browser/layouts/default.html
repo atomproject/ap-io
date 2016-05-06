@@ -37,7 +37,6 @@
 
     <nav-content>
       <paper-menu class="nav-panel" selected="1">
-        <paper-item class="top" onClick="redirect('{{ site.baseurl }}/about/')">About</paper-item>
         <paper-submenu opened>
           <paper-item class="top menu-trigger iron-selected">
             <span class="label">Elements</span>
@@ -79,12 +78,15 @@
           {% endfor %}
           </paper-menu>
         </paper-submenu>
-        <paper-item class="top" onClick="redirect('{{ site.baseurl }}/settings/')">Settings</paper-item>
+
+        {% for _page in site.pages %}
+          <paper-item class="top" onClick="redirect('{{ _page.url }}')">{{ _page.name }}</paper-item>
+        {% endfor %}
       </paper-menu>
     </nav-content>
 
     <footer>
-      <p>atom-project.io</p>
+      <p>{{ site.footerText }}</p>
     </footer>
 
     <build-status element-ids-file-path="{{ site.baseurl }}/element-ids.json"></build-status>

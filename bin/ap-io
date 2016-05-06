@@ -5,6 +5,7 @@ let path = require('path');
 let Q = require('q');
 Q.longStackSupport = true;
 let bower = require('bower');
+let globby = require('globby');
 
 let generateElementProperties = require('../browser/generate-property');
 let installElements = require('../browser/install-elements');
@@ -39,6 +40,26 @@ let removeBowerComponents = Q.async(function* () {
   yield pAll(excludes, e => fs.move(rel(name(e)), join(dir(e), name(e))));
 });
 
+function mergeFiles(defaultPaths, paths) {
+  let merged = {};
+  let name = p => path.basename(p).replace(/\..*$/, '');
+
+  defaultPaths.forEach(p => merged[name(p)] = p);
+  paths.forEach(p => merged[name(p)] = p);
+
+  return Object.keys(merged).map(key => merged[key]);
+}
+
+let copy = Q.async(function* (patterns, fromDir) {
+  let _site = path.resolve('_site');
+  patterns = patterns.map(p => path.join(fromDir, p));
+  let paths = yield globby(patterns);
+  let tPaths = paths.map(p => path.resolve(p).replace(fromDir, _site));
+
+  yield Promise.all(tPaths.map(p => fs.makeTree(path.dirname(p))));
+  yield Promise.all(paths.map((p, i) => fs.copy(p, tPaths[i])));
+});
+
 Q.spawn(function* () {
   let exists = yield fs.exists('_site');
   let resolve = path.resolve.bind(path, baseDir);
@@ -71,10 +92,9 @@ Q.spawn(function* () {
   }
 
   console.log('Copy: Copy favicon.ico, assets etc.');
-  yield Promise.all([
-    fs.copy(resolve('site/favicon.ico'), '_site/favicon.ico'),
-    fs.copyTree(resolve('site/assets'), '_site/assets')
-  ]);
+  let patterns = ['favicon.ico', 'assets/*'];
+  yield copy(patterns, path.join(baseDir, 'site'));
+  yield copy(patterns, path.resolve('.'));
 
   let config = yield cfg.getConfig();
   yield installElements(config);
@@ -86,6 +106,12 @@ Q.spawn(function* () {
   yield generateElementProperties(config);
 
   let fullConfig = yield cfg.getFullConfig();
+  let [defaultPages, pages] = yield Promise.all([
+    globby([`${config._pagesDir}/*`]),
+    globby(['pages/*'])
+  ]);
+  pages = mergeFiles(defaultPages, pages);
+
   console.log('Pages: Create the site pages');
-  yield build(fullConfig);
+  yield build(fullConfig, pages);
 });
