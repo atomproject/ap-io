@@ -12,10 +12,11 @@ let vulcan = new Vulcanize({
     'bower_components/t-component-panel/ace-element/ace/'
   ],
   inlineScripts: true,
+  inlineCss: true,
   stripComments: true
 });
 
-module.exports = Q.async(function*() {
+module.exports = Q.async(function*(config) {
   let htmlP = new Promise((resolve, reject) => {
     vulcan.process('_site/components/elements.html', (err, html) => {
       if (err) {

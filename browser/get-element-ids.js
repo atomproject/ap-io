@@ -3,7 +3,6 @@
 let fs = require('q-io/fs');
 let nodeFetch = require('node-fetch');
 let baseApiEndPoint = 'https://api.travis-ci.org/repos';
-let getConfig = require('./config').getConfig;
 let idFilePath = '_site/element-ids.json';
 let Q = require('q');
 
@@ -14,8 +13,7 @@ function getJson(url) {
   });
 }
 
-module.exports = Q.async(function* () {
-  let config = yield getConfig();
+module.exports = Q.async(function* (config) {
   let elementUrls = config.elements
     .filter(el => el.name !== 'demo-tester')
     .map(el => {

@@ -3,13 +3,15 @@
 let fs = require('q-io/fs');
 let path = require('path');
 let Q = require('q');
+Q.longStackSupport = true;
 let bower = require('bower');
 
-let generateElementProperties = require('../browser/generate-property.js');
-let installElements = require('../browser/install-elements.js');
-let getElementIds = require('../browser/get-element-ids.js');
-let vulcanCrisp = require('../browser/vulcan-crisp.js');
-let build = require('../browser/build.js');
+let generateElementProperties = require('../browser/generate-property');
+let installElements = require('../browser/install-elements');
+let getElementIds = require('../browser/get-element-ids');
+let vulcanCrisp = require('../browser/vulcan-crisp');
+let build = require('../browser/build');
+let cfg = require('../browser/config');
 let baseDir = path.dirname(__dirname);
 baseDir = path.join(baseDir, 'browser');
 
@@ -34,12 +36,12 @@ Q.spawn(function* () {
     fs.copyTree(path.resolve(baseDir, 'site/styles'), '_site/styles')
   ]);
 
-  yield installElements();
-  yield build();
-  yield getElementIds();
-  yield generateElementProperties();
+  let config = yield cfg.getConfig();
+  yield installElements(config);
+  yield getElementIds(config);
+  yield generateElementProperties(config);
 
-  if (process.argv[2] === '--prod') {
-    vulcanCrisp();
-  }
+  let fullConfig = yield cfg.getFullConfig();
+  yield build(fullConfig);
+  yield vulcanCrisp(fullConfig);
 });

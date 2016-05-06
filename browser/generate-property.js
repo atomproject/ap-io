@@ -3,7 +3,6 @@
 let fs = require('q-io/fs');
 let path = require('path');
 let hydrolysis = require('hydrolysis');
-let getConfig = require('./config').getConfig;
 let Q = require('q');
 
 function getPropertyType(type) {
@@ -66,8 +65,7 @@ let createPropertyFile = Q.async(function* (componentBaseDir, config) {
   };
 });
 
-module.exports = Q.async(function* () {
-  let config = yield getConfig();
+module.exports = Q.async(function* (config) {
   let paths = config.elements
     .map(el => {
       let dir = `_site/${el.pageDirName}/bower_components/${el.name}`;

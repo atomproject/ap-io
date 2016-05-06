@@ -8,7 +8,6 @@ let marked = require('marked');
 let promisify = require('promisify-node');
 let glob = promisify(require('glob'));
 let engine = new Liquid.Engine();
-let getFullConfig = require('./config').getFullConfig;
 let Q = require('q');
 
 let resolveLayout = Q.async(function* (filePath, config, queue) {
@@ -51,6 +50,7 @@ let createElementPage = Q.async(function* (elContext, config) {
   yield fs.makeTree(path.join('_site', pagePath));
   pagePath = path.join('_site', pagePath ,'index.html');
 
+  console.log(`Build: ${path.resolve(pagePath)}`);
   yield fs.write(pagePath, page);
 });
 
@@ -87,9 +87,8 @@ let createPage = Q.async(function* (filePath, config) {
   yield fs.write(pagePath, page);
 });
 
-module.exports = Q.async(function* () {
-  let config = yield getFullConfig();
-
+// the config used here should contain everything, i.e. `fullConfig`
+module.exports = Q.async(function* (config) {
   //setup yaml parser engine
   engine.fileSystem = new Liquid.LocalFileSystem();
   engine.fileSystem.root = config.includesDir;

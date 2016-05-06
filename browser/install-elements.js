@@ -1,7 +1,6 @@
 'use strict';
 
 let fs = require('q-io/fs');
-let getConfig = require('./config').getConfig;
 let Q = require('q');
 let request = require('request');
 let tar = require('tar-fs');
@@ -20,8 +19,7 @@ let { pushd, popd } = (function() {
   };
 })();
 
-module.exports = Q.async(function* () {
-  let config = yield getConfig();
+module.exports = Q.async(function* (config) {
   let elements = config.elements
     .filter(el => el.location.githubUser && el.location.githubRepo)
     .map(el => {
