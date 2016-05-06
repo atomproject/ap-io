@@ -8,10 +8,10 @@ let hydrolysis = require('hydrolysis');
 let Q = require('q');
 
 let defaultConfig = {
-  includesDir: path.resolve(__dirname, 'includes'),
-  layoutsDir: path.resolve(__dirname, 'layouts'),
+  _includesDir: path.resolve(__dirname, 'includes'),
+  _layoutsDir: path.resolve(__dirname, 'layouts'),
   pagesDir: path.resolve(__dirname, 'pages'),
-  templatesDir: path.resolve(__dirname, 'templates'),
+  _templatesDir: path.resolve(__dirname, 'templates'),
   baseurl: '',
   travisBaseUrl: 'https://travis-ci.org',
   markdownExtensions: ['.md']

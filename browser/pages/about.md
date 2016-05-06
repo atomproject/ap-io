@@ -1,6 +1,5 @@
 ---
 title: About
-layout: text-page
 ---
 ## Web Components
 

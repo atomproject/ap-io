@@ -15,19 +15,23 @@ let Q = require('q');
 // a common structure between files. Eg. pages/about.md contents are
 // put in its layout layouts/text-page.html in place of `{{ content }}`.
 // But this method only finds out the layouts recursively.
-let resolveLayout = Q.async(function* (filePath, config, queue) {
+let resolveLayout = Q.async(function* (filePath, config, layout, queue) {
   let file = yield fs.read(path.resolve(filePath));
-  let layout;
 
   file = fm(file);
   queue = queue || [];
   queue.push(file);
 
-  if (file.attributes && (layout = file.attributes.layout)) {
-    filePath = `${config.layoutsDir}/${layout}.html`;
-    yield resolveLayout(filePath, config, queue);
+  layout = (file.attributes && file.attributes.layout) || layout;
+
+  // layout can either be provided as argument the first call of recursion
+  // or in the front matter of the file being processed
+  if (layout) {
+    filePath = `${config._layoutsDir}/${layout}.html`;
+    yield resolveLayout(filePath, config, null, queue);
   }
 
+  // since no layout could be found the processing stops here
   return queue;
 });
 
@@ -45,7 +49,7 @@ let renderLayout = Q.async(function* (queue, context) {
 
 // creates a page per element using the template
 let createElementPage = Q.async(function* (elContext, config) {
-  let templatePath = `${config.templatesDir}/github.html`;
+  let templatePath = `${config._templatesDir}/github.html`;
   // resolve the layout of the template
   let queue = yield resolveLayout(templatePath, config);
   let fullContext = {
@@ -73,8 +77,8 @@ let createPage = Q.async(function* (filePath, config) {
     return;
   }
 
-  // resolve the layout of the page
-  let queue = yield resolveLayout(filePath, config);
+  // resolve the layout of the page with default `text-page` layout
+  let queue = yield resolveLayout(filePath, config, 'text-page');
   let pathObj = path.parse(filePath);
   let context = {site: config, page: {}};
 
@@ -85,11 +89,7 @@ let createPage = Q.async(function* (filePath, config) {
 
   // render the layout and get the contents of the page
   let page = yield renderLayout(queue, context);
-  let pagesDir = path.resolve(config.pagesDir);
   let outDir = path.resolve('_site');
-  pathObj = path.parse(filePath);
-
-  outDir = path.resolve(pathObj.dir).replace(pagesDir, outDir);
 
   // so we want clean urls and the way we implement them is by
   // creating a directory by the name of the file and then creating
@@ -109,7 +109,7 @@ let createPage = Q.async(function* (filePath, config) {
 module.exports = Q.async(function* (config) {
   //setup yaml parser engine
   engine.fileSystem = new Liquid.LocalFileSystem();
-  engine.fileSystem.root = config.includesDir;
+  engine.fileSystem.root = config._includesDir;
 
   //create the out dir
   yield fs.makeTree('_site');
@@ -120,7 +120,7 @@ module.exports = Q.async(function* (config) {
   });
 
   //create other pages
-  let files = yield glob(`${config.pagesDir}/**`);
+  let files = yield glob(`${config.pagesDir}/*`);
   let pages = files.map(filePath => createPage(filePath, config));
 
   return Promise.all([...elPages, ...pages]);

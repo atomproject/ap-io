@@ -6,7 +6,9 @@ let Vulcanize = require('vulcanize');
 let crisper = require('crisper');
 
 // we have to exclude the ace js library from vulcanization since it loads
-// service workers using urls relative to itself
+// service workers using urls relative to itself. Any files in the `excludes`
+// option to the vulcanization must also be added to the arra `excludes` in
+// `removeBowerComponents` function.
 let vulcan = new Vulcanize({
   excludes: [
     'bower_components/t-component-panel/ace-element/ace/'
@@ -16,7 +18,7 @@ let vulcan = new Vulcanize({
   stripComments: true
 });
 
-module.exports = Q.async(function*(config) {
+module.exports = Q.async(function*() {
   let htmlP = new Promise((resolve, reject) => {
     vulcan.process('_site/components/elements.html', (err, html) => {
       if (err) {

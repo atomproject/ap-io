@@ -1,6 +1,7 @@
 {
     "baseurl": "/elements",
     "absoluteBaseurl": "https://atomproject.github.io/elements/",
+    "footerText": "travel-elements.io",
     "elements": [{
         "name": "t-button",
         "category": "form",

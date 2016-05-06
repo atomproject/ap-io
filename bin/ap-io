@@ -15,6 +15,8 @@ let cfg = require('../browser/config');
 let baseDir = path.dirname(__dirname);
 baseDir = path.join(baseDir, 'browser');
 
+// comments in different files (particles.html) refer to this function
+// update them if there are any changes made here
 let removeBowerComponents = Q.async(function* () {
   let name = path.basename.bind(path), dir = path.dirname.bind(path);
   let resolve = path.resolve.bind(path), join = path.join.bind(path);
@@ -22,7 +24,11 @@ let removeBowerComponents = Q.async(function* () {
   let pAll = (arr, fn) => Promise.all(arr.map(fn));
 
   let excludes = [
-    'webcomponentsjs/webcomponents-lite.js'
+    'webcomponentsjs/webcomponents-lite.js',
+    'particles.js/particles.js',
+    't-component-panel/ace-element/ace/ace.js',
+    't-component-panel/ace-element/ace/mode-json.js',
+    't-component-panel/ace-element/ace/mode-javascript.js'
   ];
 
   excludes = excludes.map(e => resolve(rel(`bower_components/${e}`)));
@@ -78,7 +84,6 @@ Q.spawn(function* () {
 
   console.log('Property: Generate the property.json if absent');
   yield generateElementProperties(config);
-
 
   let fullConfig = yield cfg.getFullConfig();
   console.log('Pages: Create the site pages');
