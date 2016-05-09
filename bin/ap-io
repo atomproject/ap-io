@@ -6,6 +6,7 @@ let Q = require('q');
 Q.longStackSupport = true;
 let bower = require('bower');
 let globby = require('globby');
+let argv = require('minimist')(process.argv.slice(2));
 
 let generateElementProperties = require('../browser/generate-property');
 let installElements = require('../browser/install-elements');
@@ -29,7 +30,9 @@ let removeBowerComponents = Q.async(function* () {
     'particles.js/particles.js',
     't-component-panel/ace-element/ace/ace.js',
     't-component-panel/ace-element/ace/mode-json.js',
-    't-component-panel/ace-element/ace/mode-javascript.js'
+    't-component-panel/ace-element/ace/mode-javascript.js',
+    't-component-panel/ace-element/ace/worker-json.js',
+    't-component-panel/ace-element/ace/worker-javascript.js'
   ];
 
   excludes = excludes.map(e => resolve(rel(`bower_components/${e}`)));
@@ -60,7 +63,7 @@ let copy = Q.async(function* (patterns, fromDir) {
   yield Promise.all(paths.map((p, i) => fs.copy(p, tPaths[i])));
 });
 
-Q.spawn(function* () {
+let generateSite = Q.async(function*() {
   let exists = yield fs.exists('_site');
   let resolve = path.resolve.bind(path, baseDir);
 
@@ -96,7 +99,14 @@ Q.spawn(function* () {
   yield copy(patterns, path.join(baseDir, 'site'));
   yield copy(patterns, path.resolve('.'));
 
-  let config = yield cfg.getConfig();
+  // TODO: factor out the creation of config from arguments
+  let argvConfig = {};
+
+  if (argv.baseurl) {
+    argvConfig.baseurl = argv.baseurl;
+  }
+
+  let config = yield cfg.getConfig(argvConfig);
   yield installElements(config);
 
   console.log('Ids: Get travis ids of elements if present');
@@ -105,7 +115,7 @@ Q.spawn(function* () {
   console.log('Property: Generate the property.json if absent');
   yield generateElementProperties(config);
 
-  let fullConfig = yield cfg.getFullConfig();
+  let fullConfig = yield cfg.getFullConfig(config);
   let [defaultPages, pages] = yield Promise.all([
     globby([`${config._pagesDir}/*`]),
     globby(['pages/*'])
@@ -115,3 +125,68 @@ Q.spawn(function* () {
   console.log('Pages: Create the site pages');
   yield build(fullConfig, pages);
 });
+
+let copyExample = Q.async(function*() {
+  let dir = path.dirname(__dirname);
+  let exampleDir = path.join(dir, 'examples', 'browser');
+  let outExampleDir = argv.c || argv.create;
+  let type = Object.prototype.toString.call(outExampleDir);
+
+  outExampleDir = type === '[object String]' ? outExampleDir : 'docs';
+
+  console.log('Create: Setup the documentation browser');
+  yield fs.copyTree(exampleDir, outExampleDir);
+});
+
+function printVersion() {
+  let packageJson = path.join(path.dirname(__dirname), 'package.json');
+
+  return fs.read(packageJson)
+    .then(packageJson => console.log(JSON.parse(packageJson).version));
+}
+
+function printHelp() {
+console.log(`
+usage: ap-io <command> [<args>]
+
+commands:
+  browser
+
+    Manage the element documentation browser
+    usage: ap-io browser [-g | --generate]
+                         [-c | --create <browser dir>]
+    args:
+      -g | --generate
+        Generate the documentation site in _site dir
+
+      -c | --create <browser dir>
+        Create the initial setup for documentation
+
+args:
+  -h | --help
+      Print help
+
+  -v | --version
+      Print version
+`);
+}
+
+(function () {
+  if (argv.h || argv.help) {
+    return printHelp();
+  }
+
+  if (argv.v || argv.version) {
+    return printVersion();
+  }
+
+  if (argv.c || argv.create) {
+    return copyExample();
+  }
+
+  if (argv.g || argv.generate) {
+    return generateSite();
+  }
+
+  printHelp();
+})();

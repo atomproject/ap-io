@@ -157,16 +157,12 @@ function getElementContext(el, config) {
   return elContext;
 }
 
-function getConfig() {
+function getConfig(argvConfig) {
   let filePath = 'metadata.json';
 
   return fs.read(filePath).then(config => {
     config = JSON.parse(config);
-    config = Object.assign({}, defaultConfig, config);
-
-    if (process.argv[2] !== '--prod') {
-      config.baseurl = '';
-    }
+    config = Object.assign({}, defaultConfig, config, argvConfig);
 
     let elements = config.elements.map(el => getElementContext(el, config));
 
@@ -183,8 +179,7 @@ function getConfig() {
   });
 }
 
-exports.getFullConfig = Q.async(function* () {
-  let config = yield getConfig();
+exports.getFullConfig = Q.async(function* (config) {
   let elements = config.elements;
 
   elements = yield Promise.all(elements.map(Q.async(function* (el) {
