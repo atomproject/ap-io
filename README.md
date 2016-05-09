@@ -1,7 +1,3 @@
-# Documentation generator
-
-Interactive documentation generator for polymer elements
-
 # Deps
 
 1. Node (>6.0.0)
@@ -9,4 +5,4 @@ Interactive documentation generator for polymer elements
 
 # Installation
 
-npm i -g atom-doc-generator
+npm i -g ap-io
