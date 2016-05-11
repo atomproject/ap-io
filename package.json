@@ -15,6 +15,9 @@
   "bugs": {
     "url": "https://github.com/atomproject/ap-io/issues"
   },
+  "engines": {
+    "node": ">=6.0.0"
+  },
   "homepage": "https://github.com/atomproject/ap-io#readme",
   "dependencies": {
     "bower": "^1.7.1",
