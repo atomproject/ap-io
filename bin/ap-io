@@ -41,6 +41,20 @@ args:
 `);
 }
 
+function printSeedMessage(dir) {
+console.log(`
+You can now generate the site using following command.
+    cd ${dir} && ap-io browser -g
+
+Once you generate the site you can serve it locally using a server.
+To install a server locally run following command.
+    npm i -g http-server
+
+To serve the site locally use the following command.
+    http-server -o _site
+`);
+}
+
 Q.spawn(function* () {
   if (argv.h || argv.help) {
     printHelp();
@@ -51,7 +65,9 @@ Q.spawn(function* () {
   }
 
   else if (argv.n || argv.new) {
-    yield browser.seedNew(argv.n || argv.new);
+    let dir = argv.n || argv.new;
+    yield browser.seedNew(dir);
+    printSeedMessage(dir);
   }
 
   else if (argv.g || argv.generate) {
