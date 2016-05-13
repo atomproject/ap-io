@@ -24,12 +24,12 @@ commands:
 
     Manage the element documentation browser
     usage: ap-io browser [-g | --generate]
-                         [-c | --create <browser dir>]
+                         [-n | --new <new browser dir>]
     args:
       -g | --generate
         Generate the documentation site in _site dir
 
-      -c | --create <browser dir>
+      -n | --new <new browser dir>
         Create the initial setup for documentation
 
 args:

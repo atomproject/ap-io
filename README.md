@@ -9,6 +9,8 @@
 npm i -g ap-io
 ```
 
+# Usage
+
 ```
 ap-io <command> [<args>]
 ```
@@ -26,7 +28,7 @@ default icon, favicon and site pages.
 To get started first create a new documentation site.
 
 ```
-ap-io browser -c myDocs
+ap-io browser -n myDocs
 ```
 
 This will create a folder named `myDocs` with all the files necessary to generate
@@ -35,7 +37,7 @@ will be created. So, `cd` into the directory and generate the site.
 
 ```
 cd myDocs && ap-io browser -g
-``
+```
 
 This creates documentation site in folder `_site`. You can copy this folder for
 deployment.
