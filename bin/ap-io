@@ -4,139 +4,9 @@ let fs = require('q-io/fs');
 let path = require('path');
 let Q = require('q');
 Q.longStackSupport = true;
-let bower = require('bower');
-let globby = require('globby');
+
+let browser = require('browser');
 let argv = require('minimist')(process.argv.slice(2));
-
-let generateElementProperties = require('../browser/generate-property');
-let installElements = require('../browser/install-elements');
-let getElementIds = require('../browser/get-element-ids');
-let vulcanCrisp = require('../browser/vulcan-crisp');
-let build = require('../browser/build');
-let cfg = require('../browser/config');
-let baseDir = path.dirname(__dirname);
-baseDir = path.join(baseDir, 'browser');
-
-// comments in different files (particles.html) refer to this function
-// update them if there are any changes made here
-let removeBowerComponents = Q.async(function* () {
-  let name = path.basename.bind(path), dir = path.dirname.bind(path);
-  let resolve = path.resolve.bind(path), join = path.join.bind(path);
-  let rel = p => `_site/${p}`;
-  let pAll = (arr, fn) => Promise.all(arr.map(fn));
-
-  let excludes = [
-    'webcomponentsjs/webcomponents-lite.js',
-    'particles.js/particles.js',
-    't-component-panel/ace-element/ace/ace.js',
-    't-component-panel/ace-element/ace/mode-json.js',
-    't-component-panel/ace-element/ace/mode-javascript.js',
-    't-component-panel/ace-element/ace/worker-json.js',
-    't-component-panel/ace-element/ace/worker-javascript.js'
-  ];
-
-  excludes = excludes.map(e => resolve(rel(`bower_components/${e}`)));
-
-  yield pAll(excludes, e => fs.copy(e, rel(name(e))));
-  yield fs.removeTree(rel('bower_components'));
-  yield pAll(excludes, e => fs.makeTree(dir(e)));
-  yield pAll(excludes, e => fs.move(rel(name(e)), join(dir(e), name(e))));
-});
-
-function mergeFiles(defaultPaths, paths) {
-  let merged = {};
-  let name = p => path.basename(p).replace(/\..*$/, '');
-
-  defaultPaths.forEach(p => merged[name(p)] = p);
-  paths.forEach(p => merged[name(p)] = p);
-
-  return Object.keys(merged).map(key => merged[key]);
-}
-
-let copy = Q.async(function* (patterns, fromDir) {
-  let _site = path.resolve('_site');
-  patterns = patterns.map(p => path.join(fromDir, p));
-  let paths = yield globby(patterns);
-  let tPaths = paths.map(p => path.resolve(p).replace(fromDir, _site));
-
-  yield Promise.all(tPaths.map(p => fs.makeTree(path.dirname(p))));
-  yield Promise.all(paths.map((p, i) => fs.copy(p, tPaths[i])));
-});
-
-let generateSite = Q.async(function*() {
-  let exists = yield fs.exists('_site');
-  let resolve = path.resolve.bind(path, baseDir);
-
-  if (!exists) {
-    console.log('Create: create directory _site');
-    yield fs.makeTree('_site');
-
-    console.log('Copy: copy bower.json, components etc.');
-    yield Promise.all([
-      fs.copy(resolve('site/bower.json'), '_site/bower.json'),
-      fs.copyTree(resolve('site/components'), '_site/components'),
-      fs.copyTree(resolve('site/scripts'), '_site/scripts'),
-      fs.copyTree(resolve('site/styles'), '_site/styles')
-    ]);
-
-    console.log('Install: Install the bower dependencies');
-    yield new Promise((resolve, reject) => {
-      bower.commands
-        .install(undefined, undefined, {cwd: '_site'})
-        .on('end', resolve)
-        .on('error', reject);
-    });
-
-    console.log('Vulcanize: Install the bower dependencies');
-    yield vulcanCrisp();
-
-    console.log('Remove: Remove bower dependencies');
-    yield removeBowerComponents();
-  }
-
-  console.log('Copy: Copy favicon.ico, assets etc.');
-  let patterns = ['favicon.ico', 'assets/*'];
-  yield copy(patterns, path.join(baseDir, 'site'));
-  yield copy(patterns, path.resolve('.'));
-
-  // TODO: factor out the creation of config from arguments
-  let argvConfig = {};
-
-  if (argv.baseurl) {
-    argvConfig.baseurl = argv.baseurl;
-  }
-
-  let config = yield cfg.getConfig(argvConfig);
-  yield installElements(config);
-
-  console.log('Ids: Get travis ids of elements if present');
-  yield getElementIds(config);
-
-  console.log('Property: Generate the property.json if absent');
-  yield generateElementProperties(config);
-
-  let fullConfig = yield cfg.getFullConfig(config);
-  let [defaultPages, pages] = yield Promise.all([
-    globby([`${config._pagesDir}/*`]),
-    globby(['pages/*'])
-  ]);
-  pages = mergeFiles(defaultPages, pages);
-
-  console.log('Pages: Create the site pages');
-  yield build(fullConfig, pages);
-});
-
-let copyExample = Q.async(function*() {
-  let dir = path.dirname(__dirname);
-  let exampleDir = path.join(dir, 'examples', 'browser');
-  let outExampleDir = argv.c || argv.create;
-  let type = Object.prototype.toString.call(outExampleDir);
-
-  outExampleDir = type === '[object String]' ? outExampleDir : 'docs';
-
-  console.log('Create: Setup the documentation browser');
-  yield fs.copyTree(exampleDir, outExampleDir);
-});
 
 function printVersion() {
   let packageJson = path.join(path.dirname(__dirname), 'package.json');
@@ -171,22 +41,31 @@ args:
 `);
 }
 
-(function () {
+Q.spawn(function* () {
   if (argv.h || argv.help) {
-    return printHelp();
+    printHelp();
   }
 
-  if (argv.v || argv.version) {
-    return printVersion();
+  else if (argv.v || argv.version) {
+    printVersion();
   }
 
-  if (argv.c || argv.create) {
-    return copyExample();
+  else if (argv.n || argv.new) {
+    yield browser.seedNew(argv.n || argv.new);
   }
 
-  if (argv.g || argv.generate) {
-    return generateSite();
+  else if (argv.g || argv.generate) {
+    // TODO: factor out the creation of config from arguments
+    let argvConfig = {};
+
+    if (argv.baseurl) {
+      argvConfig.baseurl = argv.baseurl;
+    }
+
+    yield browser.generateSite(argvConfig);
   }
 
-  printHelp();
-})();
+  else {
+    printHelp();
+  }
+});
