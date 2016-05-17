@@ -25,9 +25,13 @@ commands:
     Manage the element documentation browser
     usage: ap-io browser [-g | --generate]
                          [-n | --new <new browser dir>]
+                         [--baseurl <value>]
     args:
       -g | --generate
         Generate the documentation site in _site dir
+
+      --baseurl <value>
+        Provide the value for baseurl while generating the site
 
       -n | --new <new browser dir>
         Create the initial setup for documentation
@@ -47,7 +51,7 @@ You can now generate the site using following command.
     cd ${dir} && ap-io browser -g
 
 Once you generate the site you can serve it locally using a server.
-To install a server locally run following command.
+You can install a server globally if you don't have one using the command below.
     npm i -g http-server
 
 To serve the site locally use the following command.
