@@ -53,3 +53,16 @@ Eg.
 ```
 ap-io browser -g --baseurl '/elements'
 ```
+
+
+You can add elements to the `metadata.json` from command line. You can also
+create an element first then add the element to the `metadata.json`.
+To add an element run following command.
+
+```
+ap-io browser -e
+```
+
+It will ask for a bunch of things like element name, the bower install endpoint,
+category etc. Once you provide those your `metadata.json` will be updated with
+the new element.

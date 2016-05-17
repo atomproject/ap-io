@@ -26,6 +26,7 @@ commands:
     usage: ap-io browser [-g | --generate]
                          [-n | --new <new browser dir>]
                          [--baseurl <value>]
+                         [-e]
     args:
       -g | --generate
         Generate the documentation site in _site dir
@@ -35,6 +36,9 @@ commands:
 
       -n | --new <new browser dir>
         Create the initial setup for documentation
+
+      -e
+        Add elements to the config. You can also create a new element
 
 args:
   -h | --help
@@ -55,7 +59,7 @@ You can install a server globally if you don't have one using the command below.
     npm i -g http-server
 
 To serve the site locally use the following command.
-    http-server -o _site
+    http-server _site -o
 `);
 }
 
@@ -83,6 +87,10 @@ Q.spawn(function* () {
     }
 
     yield browser.generateSite(argvConfig);
+  }
+
+  else if (argv.e || argv.addElement) {
+    yield browser.addElement();
   }
 
   else {
