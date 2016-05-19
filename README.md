@@ -1,3 +1,9 @@
+# ap-io
+
+`ap-io` is command line tool for using atom project infrastructure. Currently
+it only has support for creating the elements browser site from command line.
+Elements browser is an [interactive documentation system][1] for polymer elements.
+
 # Dependencies
 
 1. Node (>6.0.0)
@@ -12,20 +18,27 @@ npm i -g ap-io
 # Usage
 
 ```
-ap-io <command> [<args>]
+ap-io [-h | --help] [-v | --version] <command> [<args>]
 ```
 
-Only the command `browser` is supported for now.
+Only the command `browser` is supported for now. It handles the various operations
+related to the elements browser.
 
-## Borwser
+## Browser
 
-This command creates static documentation site from the given data. To create
-a site you first create a directory and add a file named `metadata.json` in it.
-This file contains configuration related to the site and the elements for which
-the documentation is to be generated. You can also provide files to override the
-default icon, favicon and site pages.
+This command allows following operations.
 
-To get started first create a new documentation site.
+1. Create a new elements browser project
+2. Add or create a new element in the elements browser
+3. Generate the documentation site for elemens browser
+
+This command creates a interactive documentation site for your elements. The data
+for generating the site comes from a file named `metadata.json`.
+This file contains configuration related to the site and the list of elements for which
+the documentation is to be generated. You can also make use of further customization
+options like logo, favicon, pages etc.
+
+To get started first create a new elements browser project.
 
 ```
 ap-io browser -n myDocs
@@ -53,16 +66,25 @@ Eg.
 ```
 ap-io browser -g --baseurl '/elements'
 ```
-
+To create a new element or add an existing one, run the following command.
 
 You can add elements to the `metadata.json` from command line. You can also
-create an element first then add the element to the `metadata.json`.
-To add an element run following command.
+create an element first then add the element to the `metadata.json` from command line.
+To add an element 
 
 ```
 ap-io browser -e
 ```
+In case of new element creation, a folder will be created with the name you
+specify and a basic structure for a web component will be created in it.
 
-It will ask for a bunch of things like element name, the bower install endpoint,
-category etc. Once you provide those your `metadata.json` will be updated with
-the new element.
+In case of adding an existing element, the element will be installed into a
+folder with its name in the directory `_site`.
+
+In both cases, it will ask for a bunch of things like element name, the bower
+install endpoint, category etc. Once you provide those your `metadata.json`
+will be updated with the new element.
+
+
+
+[1]: https://github.com/atomproject/docs/blob/master/elements-browser-spec.md
