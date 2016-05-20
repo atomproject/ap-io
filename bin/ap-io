@@ -7,6 +7,7 @@ Q.longStackSupport = true;
 
 let browser = require('browser');
 let argv = require('minimist')(process.argv.slice(2));
+let fixMsys = require('browser/lib/utils').fixMsys;
 
 function printVersion() {
   let packageJson = path.join(path.dirname(__dirname), 'package.json');
@@ -91,7 +92,7 @@ Q.spawn(function* () {
     let argvConfig = {};
 
     if (argv.baseurl) {
-      argvConfig.baseurl = argv.baseurl;
+      argvConfig.baseurl = fixMsys(argv.baseurl);
     }
 
     yield browser.generateSite(log, argvConfig);
