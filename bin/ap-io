@@ -23,23 +23,23 @@ commands:
   browser
 
     Manage the element documentation browser
-    usage: ap-io browser [-g | --generate]
-                         [-n | --new <new browser dir>]
-                         [--baseurl <value>]
+    usage: ap-io browser [-n | --new <new browser dir>]
+                         [-g | --generate]
                          [-e]
+                         [--baseurl <value>]
                          [--verbose]
     args:
-      -g | --generate
-        Generate the documentation site in _site dir
-
-      --baseurl <value>
-        Provide the value for baseurl while generating the site
-
       -n | --new <new browser dir>
         Create the initial setup for documentation
 
+      -g | --generate
+        Generate the documentation site in _site dir
+
       -e
         Add elements to the config. You can also create a new element
+
+      --baseurl <value>
+        Provide the value for baseurl while generating the site
 
       --verbose
           Spit out as much as info as possible
@@ -82,8 +82,7 @@ Q.spawn(function* () {
   }
 
   else if (argv.n || argv.new) {
-    let dir = argv.n || argv.new;
-    yield browser.seedNew(log, dir);
+    let dir = yield browser.seedNew(log, argv.n || argv.new);
     printSeedMessage(dir);
   }
 
