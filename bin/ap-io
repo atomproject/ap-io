@@ -26,6 +26,7 @@ commands:
     Manage the element documentation browser
     usage: ap-io browser [-n | --new <new browser dir>]
                          [-g | --generate]
+                         [-s | --serve]
                          [-e]
                          [--baseurl <value>]
                          [--verbose]
@@ -35,6 +36,9 @@ commands:
 
       -g | --generate
         Generate the documentation site in _site dir
+
+      -s | --serve
+        Watch the current directory for changes and serve the site
 
       -e
         Add elements to the config. You can also create a new element
@@ -100,6 +104,12 @@ Q.spawn(function* () {
 
   else if (argv.e || argv.addElement) {
     yield browser.addElement(log);
+  }
+
+  else if (argv.s || argv.serve) {
+    // we don't need to yield anything here since this is going to
+    // continue until aborts this process
+    browser.serve(log);
   }
 
   else {
